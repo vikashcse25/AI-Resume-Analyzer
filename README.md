@@ -1,5 +1,14 @@
 # 🤖 AI Resume Analyzer
 
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+
+![Node.js](https://img.shields.io/badge/Node.js-Express-green)
+
+![AI](https://img.shields.io/badge/AI-Ollama-orange)
+
+![License](https://img.shields.io/badge/License-MIT-blue)
+# 🤖 AI Resume Analyzer
+
 An AI-powered Resume Analyzer built using the MERN Stack and Ollama LLM.
 
 It analyzes resumes, calculates ATS scores, detects job domains, predicts suitable job roles, identifies missing skills, and provides AI-powered career recommendations.
@@ -90,6 +99,15 @@ node index.js
 - PDF Report Generation
 
 ---
+## 📸 Screenshots
+
+Coming Soon...
+
+
+## 🌐 Live Demo
+
+Coming Soon...
+
 
 ## 🚀 Upcoming Features
 
