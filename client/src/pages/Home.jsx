@@ -1,4 +1,4 @@
-import Hero from "../components/Hero";
+/*import Hero from "../components/Hero";
 
 function Home() {
   return (
@@ -8,4 +8,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Home;*/
