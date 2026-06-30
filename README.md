@@ -101,6 +101,14 @@ node index.js
 ---
 ## 📸 Screenshots
 
+### 🏠 Home Page
+
+![Home Page](assets/screenshots/home-page.png)
+
+### 🎯 ATS Analysis
+
+![ATS](assets/screenshots/ats-score.png)
+
 Coming Soon...
 
 
