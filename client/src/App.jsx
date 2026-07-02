@@ -38,7 +38,7 @@ const [benchmarkPercentile, setBenchmarkPercentile] =
   const [improvedText, setImprovedText] = useState("");
 
   useEffect(() => {
-  fetch("http://localhost:5000")
+  fetch("https://ai-resume-analyzer-wblh.onrender.com")
     .then((res) => res.text())
     .then((data) => {
       console.log(data);
@@ -127,7 +127,7 @@ const downloadReport = () => {
 
 const improveText = async (text) => {
   const response = await fetch(
-    "http://localhost:5000/rewrite",
+    "https://ai-resume-analyzer-wblh.onrender.com/rewrite",
     {
       method: "POST",
       headers: {
@@ -155,7 +155,7 @@ const handleUpload = async () => {
     const formData = new FormData();
     formData.append("resume", file);
 
-    const response = await fetch("http://localhost:5000/upload", {
+    const response = await fetch("https://ai-resume-analyzer-wblh.onrender.com/upload", {
       method: "POST",
       body: formData,
     });
