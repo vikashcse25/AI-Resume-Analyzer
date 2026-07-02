@@ -1,17 +1,23 @@
-const { default: ollama } = require("ollama");
+require("dotenv").config();
+
+const { GoogleGenAI } = require("@google/genai");
+
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
+
 const fs = require("fs");
 const pdfParse = require("pdf-parse");
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 
-
 const app = express();
 
 app.use(cors());
+app.use(express.json());
 
 const upload = multer({ dest: "uploads/" });
-
 app.get("/", (req, res) => {
 res.send("Server Running");
 });
@@ -31,72 +37,67 @@ const pdfData = await pdfParse(pdfBuffer);
 
 const text = pdfData.text;
 
-const aiResponse = await ollama.chat({
-  model: "qwen2.5:3b",
-  messages: [
-    {
-      role: "user",
-      content: `
-
-
+const prompt = `
 Analyze this resume carefully.
 
 Tasks:
 
 1. Detect the candidate's Domain.
 2. Detect the most suitable Job Role.
-3. Detect Experience Level (Fresher, Entry Level, Mid Level, Senior Level, etc.).
+3. Detect Experience Level.
 4. Give an ATS Score out of 100.
 5. List top strengths.
-6. List weaknesses or missing areas.
+6. List weaknesses.
 7. Give improvement suggestions.
 
-IMPORTANT:
-
-* Return ONLY valid JSON.
-* Do NOT add explanations.
-* Do NOT add markdown.
-* Do NOT add text before or after JSON.
+Return ONLY valid JSON.
 
 Format:
 
 {
   "domain": "",
   "domainConfidence": 0,
-
   "role": "",
   "roleConfidence": 0,
-
   "experienceLevel": "",
   "experienceConfidence": 0,
-
   "score": 0,
   "strengths": [],
   "weaknesses": [],
   "suggestions": []
 }
+
 Resume:
 
 ${text}
-`,
-    
-    },
-  ],
-}); 
-console.log("RAW AI RESPONSE:");
-console.log(aiResponse.message.content);
+`;
+
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: prompt,
+});
+
+let raw = response.text;
+
+raw = raw
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
 
 let aiAnalysis;
 
 try {
-  aiAnalysis = JSON.parse(aiResponse.message.content);
+  aiAnalysis = JSON.parse(raw);
 } catch (error) {
-  console.log("JSON Parse Error");
+  console.log("Gemini JSON Parse Error");
 
   aiAnalysis = {
     domain: "Unknown",
     role: "Unknown",
     experienceLevel: "Unknown",
+    domainConfidence: 0,
+    roleConfidence: 0,
+    experienceConfidence: 0,
     score: 0,
     strengths: [],
     weaknesses: [],
@@ -104,7 +105,7 @@ try {
   };
 }
 
-console.log("AI ANALYSIS =", aiAnalysis);
+console.log(aiAnalysis);
 
 const skills = [];
 
@@ -185,35 +186,23 @@ res.status(500).json({
 }
 });
 
-app.get("/test", (req, res) => {
-res.send("TEST ROUTE WORKING");
-});
-
 app.get("/ai-test", async (req, res) => {
-try {
-const response = await ollama.chat({
-model: "qwen2.5:3b",
-messages: [
-{
-role: "user",
-content: "Say hello in one sentence",
-},
-],
-});
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: "Say hello in one sentence",
+    });
 
+    res.json({
+      message: response.text,
+    });
+  } catch (error) {
+    console.error(error);
 
-res.json(response);
-
-
-} catch (error) {
-console.error(error);
-
-res.status(500).json({
-  message: error.message,
-});
-
-
-}
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 });
 
 app.listen(5000, () => {
@@ -223,25 +212,22 @@ app.post("/rewrite", express.json(), async (req, res) => {
   try {
     const { text } = req.body;
 
-    const response = await ollama.chat({
-      model: "qwen2.5:3b",
-      messages: [
-        {
-          role: "user",
-          content: `
+    const prompt = `
 Rewrite the following resume point professionally.
 
 Return only the improved sentence.
 
 Text:
 ${text}
-          `,
-        },
-      ],
+`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
     });
 
     res.json({
-      improvedText: response.message.content,
+      improvedText: response.text.trim(),
     });
   } catch (error) {
     res.status(500).json({
